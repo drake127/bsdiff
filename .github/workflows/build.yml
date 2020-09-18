@@ -55,7 +55,7 @@ jobs:
 
     - name: Configure CMake
       working-directory: ${{runner.workspace}}/build
-      run: cmake "${env:GITHUB_WORKSPACE}" -DCMAKE_BUILD_TYPE="${env:BUILD_TYPE}" -DCMAKE_TOOLCHAIN_FILE="$(where.exe vcpkg.exe)\\scripts\\buildsystems\\vcpkg.cmake"
+      run: cmake "${env:GITHUB_WORKSPACE}" -DCMAKE_BUILD_TYPE="${env:BUILD_TYPE}" -DCMAKE_TOOLCHAIN_FILE="$(Split-Path $(where.exe vcpkg.exe))\scripts\buildsystems\vcpkg.cmake"
 
     - name: Build Sources
       working-directory: ${{runner.workspace}}\build
