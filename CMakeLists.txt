@@ -13,7 +13,7 @@ if (MSVC)
         "_CRT_NONSTDC_NO_WARNINGS"
         "stat64=_stat64"
         "fstat64=_fstat64"
-        "GCC_UNUSED"
+        "GCC_UNUSED="
         "GCC_NORETURN=__declspec(noreturn)")
 else()
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
