@@ -10,8 +10,8 @@ on:
   pull_request:
 
 jobs:
-  build:
-    name: Build
+  ubuntu:
+    name: Ubuntu 16.04
     runs-on: ubuntu-16.04
     defaults:
       run:
@@ -38,4 +38,21 @@ jobs:
         ./bsdiff  bsdiff bspatch patch.0
         ./bspatch bsdiff bspatch2 patch.0
         cmp -s bspatch bspatch2
- 
+  windows:
+    name: Windows Server 2019
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Sources.
+      uses: actions/checkout@v2
+
+    - name: Create Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+    - name: Build Sources
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build .
