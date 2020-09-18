@@ -11,7 +11,7 @@ on:
 
 jobs:
   ubuntu:
-    name: Ubuntu 16.04
+    name: Ubuntu 16.04 [gcc]
     runs-on: ubuntu-16.04
     defaults:
       run:
@@ -27,6 +27,32 @@ jobs:
     - name: Configure CMake
       working-directory: ${{runner.workspace}}/build
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+    - name: Build Sources
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config $BUILD_TYPE
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      run: ./bsdiff bsdiff bspatch patch.bsdiff && ./bspatch bsdiff bspatch_new patch.bsdiff && cmp -s bspatch bspatch_new
+
+  ubuntu:
+    name: Ubuntu 18.04 [clang]
+    runs-on: ubuntu-18.04
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout Sources
+      uses: actions/checkout@v2
+
+    - name: Create Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}/build
+      run: CC=clang cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
     - name: Build Sources
       working-directory: ${{runner.workspace}}/build
