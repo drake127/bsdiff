@@ -17,7 +17,7 @@ if (MSVC)
         "GCC_UNUSED="
         "GCC_NORETURN=__declspec(noreturn)")
 else()
-	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
     add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-Werror")
     add_compile_definitions(
         "_LARGEFILE64_SOURCE"
