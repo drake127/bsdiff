@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 project (
     bsdiff
-    VERSION 4.3.0
     LANGUAGES C)
 
 # Sets global options.
