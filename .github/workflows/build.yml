@@ -47,7 +47,9 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Create Environment
-      run: cmake -E make_directory "${{runner.workspace}}\build"
+      run: |
+        cmake -E make_directory "${{runner.workspace}}\build"
+        where vcpkg
 
     - name: Configure CMake
       working-directory: ${{runner.workspace}}/build
