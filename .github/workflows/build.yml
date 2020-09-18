@@ -51,7 +51,7 @@ jobs:
 
     - name: Configure CMake
       working-directory: ${{runner.workspace}}/build
-      run: cmake %GITHUB_WORKSPACE% -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
+      run: cmake ${env:GITHUB_WORKSPACE} -DCMAKE_BUILD_TYPE=${env:BUILD_TYPE}
 
     - name: Build Sources
       working-directory: ${{runner.workspace}}\build
