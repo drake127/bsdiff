@@ -10,7 +10,7 @@ on:
   pull_request:
 
 jobs:
-  ubuntu:
+  ubuntu_gcc:
     name: Ubuntu 16.04 [gcc]
     runs-on: ubuntu-16.04
     defaults:
@@ -36,7 +36,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: ./bsdiff bsdiff bspatch patch.bsdiff && ./bspatch bsdiff bspatch_new patch.bsdiff && cmp -s bspatch bspatch_new
 
-  ubuntu:
+  ubuntu_clang:
     name: Ubuntu 18.04 [clang]
     runs-on: ubuntu-18.04
     defaults:
