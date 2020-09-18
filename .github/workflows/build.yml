@@ -11,7 +11,7 @@ on:
 
 jobs:
   ubuntu_gcc:
-    name: Ubuntu 16.04 [gcc]
+    name: ubuntu-gcc
     runs-on: ubuntu-16.04
     defaults:
       run:
@@ -37,7 +37,7 @@ jobs:
       run: ./bsdiff bsdiff bspatch patch.bsdiff && ./bspatch bsdiff bspatch_new patch.bsdiff && cmp -s bspatch bspatch_new
 
   ubuntu_clang:
-    name: Ubuntu 18.04 [clang]
+    name: ubuntu-clang
     runs-on: ubuntu-18.04
     defaults:
       run:
@@ -63,7 +63,7 @@ jobs:
       run: ./bsdiff bsdiff bspatch patch.bsdiff && ./bspatch bsdiff bspatch_new patch.bsdiff && cmp -s bspatch bspatch_new
 
   windows:
-    name: Windows Server 2019
+    name: windows-msvc
     runs-on: windows-2019
 
     steps:
