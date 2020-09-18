@@ -30,13 +30,13 @@ jobs:
 
     - name: Build Sources
       working-directory: ${{runner.workspace}}/build
-      run: cmake --build .
+      run: cmake --build . --config $BUILD_TYPE
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
       run: |
-        ./bsdiff  bsdiff bspatch patch.0
-        ./bspatch bsdiff bspatch2 patch.0
+        ./bsdiff  bsdiff bspatch     patch.bsdiff
+        ./bspatch bsdiff bspatch_new patch.bsdiff
         cmp -s bspatch bspatch2
 
   windows:
@@ -64,6 +64,6 @@ jobs:
     - name: Test
       working-directory: ${{runner.workspace}}\build\${{env.BUILD_TYPE}}
       run: |
-        ./bsdiff.exe  bsdiff.exe bspatch.exe  patch.0
-        ./bspatch.exe bsdiff.exe bspatch2.exe patch.0
+        ./bsdiff.exe  bsdiff.exe bspatch.exe     patch.bsdiff
+        ./bspatch.exe bsdiff.exe bspatch_new.exe patch.bsdiff
         if ((Get-FileHash bspatch.exe).hash -ne (Get-FileHash bspatch2.exe).hash) { exit 1; }
