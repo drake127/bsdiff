@@ -3,13 +3,13 @@ bsdiff/bspatch ![Build](https://github.com/drake127/bsdiff/workflows/Build%20&%2
 bsdiff and bspatch are libraries for building and applying patches to binary
 files.
 
-The original algorithm and implementation was developed by Colin Percival.
+The original algorithm and implementation was developed by Colin Percival.  
 The algorithm is detailed in his paper, [Naïve Differences of Executable Code](http://www.daemonology.net/papers/bsdiff.pdf).
 For more information, visit his website at <http://www.daemonology.net/bsdiff/>.
 
 Contact
 -----
-[@drake127](https://github.com/drake127)
+[@drake127](https://github.com/drake127)  
 https://github.com/drake127/bsdiff
 
 [@MatthewEndsley](https://twitter.com/#!/MatthewEndsley) maintained this project
@@ -19,8 +19,8 @@ project, I took over with the original goal.
 
 License [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 -----
-Copyright 2003-2005 Colin Percival
-Copyright 2012-2018 Matthew Endsley
+Copyright 2003-2005 Colin Percival  
+Copyright 2012-2018 Matthew Endsley  
 Copyright 2018-2020 Emanuel Komínek
 
 This project is governed by the BSD 2-clause license. For details see the file
