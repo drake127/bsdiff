@@ -66,4 +66,4 @@ jobs:
       run: |
         ./bsdiff.exe  bsdiff.exe bspatch.exe  patch.0
         ./bspatch.exe bsdiff.exe bspatch2.exe patch.0
-        (Get-FileHash bspatch.exe).hash -eq (Get-FileHash bsdiff.exe).hash
+        if ((Get-FileHash bspatch.exe).hash -eq (Get-FileHash bsdiff.exe).hash) { exit 0; } else { exit 1; }
