@@ -394,13 +394,9 @@ int bsdiff(const uint8_t* source, int64_t sourcesize, const uint8_t* target, int
 #if defined(BSDIFF_EXECUTABLE)
 
 #include <bzlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <sys/stat.h>
 #include "common.h"
 
-static int bz2_write(struct bsdiff_stream* stream, const void* buffer, int size, GCC_UNUSED int type)
+static int bz2_write(struct bsdiff_stream* stream, const void* buffer, int size, ATTR_UNUSED int type)
 {
 	int bz2err;
 	BZFILE* bz2;

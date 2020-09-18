@@ -1,4 +1,4 @@
-/*-
+﻿/*-
  * Copyright 2018-2020 Emanuel Komínek
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,17 @@
 #ifndef BSDIFF_COMMON_H
 #define BSDIFF_COMMON_H
 
+#include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+
 #ifndef min
 # define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
-static inline GCC_NORETURN void errx(int eval, const char * fmt, ...)
+static inline ATTR_NORETURN void errx(int eval, const char * fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);

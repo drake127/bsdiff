@@ -100,15 +100,10 @@ int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t 
 #if defined(BSPATCH_EXECUTABLE)
 
 #include <bzlib.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
-#include <sys/stat.h>
 #include "common.h"
 
-static int bz2_read(const struct bspatch_stream* stream, void* buffer, int length, GCC_UNUSED int type)
+static int bz2_read(const struct bspatch_stream* stream, void* buffer, int length, ATTR_UNUSED int type)
 {
 	int n;
 	int bz2err;
