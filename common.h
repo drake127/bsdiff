@@ -30,7 +30,7 @@
 # define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
-inline GCC_NORETURN void errx(int eval, const char * fmt, ...)
+static inline GCC_NORETURN void errx(int eval, const char * fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
