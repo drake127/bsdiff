@@ -18,7 +18,7 @@ jobs:
         shell: bash
 
     steps:
-    - name: Checkout Sources.
+    - name: Checkout Sources
       uses: actions/checkout@v2
 
     - name: Create Environment
@@ -38,22 +38,24 @@ jobs:
         ./bsdiff  bsdiff bspatch patch.0
         ./bspatch bsdiff bspatch2 patch.0
         cmp -s bspatch bspatch2
+
   windows:
     name: Windows Server 2019
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     steps:
-    - name: Checkout Sources.
+    - name: Checkout Sources
       uses: actions/checkout@v2
+      
+    - name: Build Dependencies
+      run: vcpkg.exe install bzip2:x64-windows
 
     - name: Create Environment
-      run: |
-        cmake -E make_directory "${{runner.workspace}}\build"
-        vcpkg.exe install bzip2:x64-windows
+      run: cmake -E make_directory "${{runner.workspace}}\build"
 
     - name: Configure CMake
       working-directory: ${{runner.workspace}}/build
-      run: cmake "${env:GITHUB_WORKSPACE}" -DCMAKE_BUILD_TYPE="${env:BUILD_TYPE}" -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+      run: cmake "${env:GITHUB_WORKSPACE}" -DCMAKE_BUILD_TYPE="${env:BUILD_TYPE}" -DCMAKE_TOOLCHAIN_FILE="$(where.exe vcpkg.exe)\\scripts\\buildsystems\\vcpkg.cmake"
 
     - name: Build Sources
       working-directory: ${{runner.workspace}}\build
