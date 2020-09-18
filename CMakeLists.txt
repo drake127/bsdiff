@@ -9,13 +9,13 @@ set(CMAKE_C_STANDARD 99)
 if (MSVC)
   string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
   add_compile_options("/wd4100")
-  add_definitions(
-    "/D_CRT_SECURE_NO_WARNINGS"
-    "/D_CRT_NONSTDC_NO_WARNINGS"
-    "/Dstat64=_stat64"
-    "/Dfstat64=_fstat64"
-    "/DATTR_UNUSED="
-    "/DATTR_NORETURN=__declspec(noreturn)")
+  add_compile_definitions(
+    "_CRT_SECURE_NO_WARNINGS"
+    "_CRT_NONSTDC_NO_WARNINGS"
+    "stat64=_stat64"
+    "fstat64=_fstat64"
+    "ATTR_UNUSED="
+    "ATTR_NORETURN=__declspec(noreturn)")
 else()
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
   add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-Werror")
