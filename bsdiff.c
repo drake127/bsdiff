@@ -398,16 +398,7 @@ int bsdiff(const uint8_t* source, int64_t sourcesize, const uint8_t* target, int
 #include <stdarg.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-
-void err(int eval, const char * fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	vfprintf(stderr, fmt, args);
-	va_end(args);
-	exit(eval);
-}
-#define errx err
+#include "common.h"
 
 static int bz2_write(struct bsdiff_stream* stream, const void* buffer, int size, GCC_UNUSED int type)
 {
@@ -424,71 +415,55 @@ static int bz2_write(struct bsdiff_stream* stream, const void* buffer, int size,
 
 int main(int argc,char *argv[])
 {
-	FILE * fd;
+	FILE * fp;
+	uint8_t * source, * target;
+	int64_t sourcesize, targetsize;
+	uint8_t i64buf[8];
+	BZFILE * bz2;
 	int bz2err;
-	uint8_t *old,*new;
-	off_t oldsize,newsize;
-	uint8_t buf[8];
-	FILE * pf;
 	struct bsdiff_stream stream;
-	BZFILE* bz2;
 
-	memset(&bz2, 0, sizeof(bz2));
+	if (argc != 4)
+		errx(1, "usage: %s oldfile newfile patchfile\n", argv[0]);
+
+	// Reads source file.
+	read_file_to_buffer(argv[1], &source, &sourcesize);
+
+	// Reads target file.
+	read_file_to_buffer(argv[2], &target, &targetsize);
+
+	// Creates patch file.
+	if ((fp = fopen(argv[3], "wb")) == NULL)
+		errx(1, "fopen (%s)", argv[3]);
+
+	// Writes patch header (signature + newsize)
+	offtout(targetsize, i64buf);
+	if (fwrite("ENDSLEY/BSDIFF43", 1, 16, fp) != 16 ||
+		fwrite(i64buf, 1, sizeof(i64buf), fp) != sizeof(i64buf))
+		errx(1, "fwrite (%s)", argv[3]);
+
+	// Opens bzip2 stream.
+	if ((bz2 = BZ2_bzWriteOpen(&bz2err, fp, 9, 0, 0)) == NULL)
+		errx(1, "BZ2_bzWriteOpen (bz2err=%d)", bz2err);
+
+	// Creates patch.
+	stream.opaque = bz2;
 	stream.malloc = malloc;
 	stream.free = free;
 	stream.write = bz2_write;
+	if (bsdiff(source, sourcesize, target, targetsize, &stream))
+		errx(1, "bsdiff");
 
-	if(argc!=4) errx(1,"usage: %s oldfile newfile patchfile\n",argv[0]);
-
-	/* Allocate oldsize+1 bytes instead of oldsize bytes to ensure
-		that we never try to malloc(0) and get a NULL pointer */
-	if(((fd=fopen(argv[1],"rb"))==NULL) ||
-		(fseek(fd,0,SEEK_END)==-1) ||
-		((oldsize=ftell(fd))==-1) ||
-		((old=malloc(oldsize+1))==NULL) ||
-		(fseek(fd,0,SEEK_SET)!=0) ||
-		(fread(old,1,oldsize,fd)!=(size_t)oldsize) ||
-		(fclose(fd)==-1)) err(1,"%s",argv[1]);
-
-
-	/* Allocate newsize+1 bytes instead of newsize bytes to ensure
-		that we never try to malloc(0) and get a NULL pointer */
-	if(((fd=fopen(argv[2],"rb"))==NULL) ||
-		(fseek(fd,0,SEEK_END)==-1) ||
-		((newsize=ftell(fd))==-1) ||
-		((new=malloc(newsize+1))==NULL) ||
-		(fseek(fd,0,SEEK_SET)!=0) ||
-		(fread(new,1,newsize,fd)!=(size_t)newsize) ||
-		(fclose(fd)==-1)) err(1,"%s",argv[2]);
-
-	/* Create the patch file */
-	if ((pf = fopen(argv[3], "wb")) == NULL)
-		err(1, "%s", argv[3]);
-
-	/* Write header (signature+newsize)*/
-	offtout(newsize, buf);
-	if (fwrite("ENDSLEY/BSDIFF43", 16, 1, pf) != 1 ||
-		fwrite(buf, sizeof(buf), 1, pf) != 1)
-		err(1, "Failed to write header");
-
-
-	if (NULL == (bz2 = BZ2_bzWriteOpen(&bz2err, pf, 9, 0, 0)))
-		errx(1, "BZ2_bzWriteOpen, bz2err=%d", bz2err);
-
-	stream.opaque = bz2;
-	if (bsdiff(old, oldsize, new, newsize, &stream))
-		err(1, "bsdiff");
-
+	// Closes patch file.
 	BZ2_bzWriteClose(&bz2err, bz2, 0, NULL, NULL);
 	if (bz2err != BZ_OK)
-		err(1, "BZ2_bzWriteClose, bz2err=%d", bz2err);
-
-	if (fclose(pf))
-		err(1, "fclose");
+		errx(1, "BZ2_bzWriteClose (bz2err=%d)", bz2err);
+	if (fclose(fp) != 0)
+		errx(1, "fclose (%s)", argv[3]);
 
 	/* Free the memory we used */
-	free(old);
-	free(new);
+	free(source);
+	free(target);
 
 	return 0;
 }
