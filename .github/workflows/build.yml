@@ -34,10 +34,7 @@ jobs:
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
-      run: |
-        ./bsdiff  bsdiff bspatch     patch.bsdiff
-        ./bspatch bsdiff bspatch_new patch.bsdiff
-        cmp -s bspatch bspatch2
+      run: ./bsdiff bsdiff bspatch patch.bsdiff && ./bspatch bsdiff bspatch_new patch.bsdiff && cmp -s bspatch bspatch_new
 
   windows:
     name: Windows Server 2019
