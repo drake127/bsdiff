@@ -8,11 +8,20 @@ project (
 set(CMAKE_C_STANDARD 99)
 if (MSVC)
 	string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-	add_compile_definitions("_CRT_SECURE_NO_WARNINGS" "_CRT_NONSTDC_NO_WARNINGS" "stat64=_stat64" "fstat64=_fstat64")
+	add_compile_definitions(
+        "_CRT_SECURE_NO_WARNINGS"
+        "_CRT_NONSTDC_NO_WARNINGS"
+        "stat64=_stat64"
+        "fstat64=_fstat64"
+        "GCC_UNUSED"
+        "GCC_NORETURN=__declspec(noreturn)")
 else()
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
-    add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-Werror" "-Wno-unused-parameter")
-    add_compile_definitions("_LARGEFILE64_SOURCE")
+    add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-Werror")
+    add_compile_definitions(
+        "_LARGEFILE64_SOURCE"
+        "GCC_UNUSED=__attribute__((unused))"
+        "GCC_NORETURN=__attribute__((noreturn))")
 endif()
 
 # Includes bzip2 library.
