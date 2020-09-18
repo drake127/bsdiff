@@ -7,8 +7,9 @@ project (
 # Sets global options.
 set(CMAKE_C_STANDARD 99)
 if (MSVC)
-	string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-	add_compile_definitions(
+    string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    add_compile_options("/wd4100")
+    add_compile_definitions(
         "_CRT_SECURE_NO_WARNINGS"
         "_CRT_NONSTDC_NO_WARNINGS"
         "stat64=_stat64"
