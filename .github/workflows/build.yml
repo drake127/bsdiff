@@ -10,15 +10,15 @@ on:
   pull_request:
 
 jobs:
-  build:
-    name: Build
+  ubuntu_gcc:
+    name: ubuntu-gcc
     runs-on: ubuntu-16.04
     defaults:
       run:
         shell: bash
 
     steps:
-    - name: Checkout Sources.
+    - name: Checkout Sources
       uses: actions/checkout@v2
 
     - name: Create Environment
@@ -30,4 +30,63 @@ jobs:
 
     - name: Build Sources
       working-directory: ${{runner.workspace}}/build
-      run: cmake --build .
+      run: cmake --build . --config $BUILD_TYPE
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      run: ./bsdiff bsdiff bspatch patch.bsdiff && ./bspatch bsdiff bspatch_new patch.bsdiff && cmp -s bspatch bspatch_new
+
+  ubuntu_clang:
+    name: ubuntu-clang
+    runs-on: ubuntu-18.04
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout Sources
+      uses: actions/checkout@v2
+
+    - name: Create Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}/build
+      run: CC=clang cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+    - name: Build Sources
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config $BUILD_TYPE
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      run: ./bsdiff bsdiff bspatch patch.bsdiff && ./bspatch bsdiff bspatch_new patch.bsdiff && cmp -s bspatch bspatch_new
+
+  windows:
+    name: windows-msvc
+    runs-on: windows-2019
+
+    steps:
+    - name: Checkout Sources
+      uses: actions/checkout@v2
+      
+    - name: Build Dependencies
+      run: vcpkg.exe install bzip2:x64-windows
+
+    - name: Create Environment
+      run: cmake -E make_directory "${{runner.workspace}}\build"
+
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}\build
+      run: cmake "${env:GITHUB_WORKSPACE}" -DCMAKE_BUILD_TYPE="${env:BUILD_TYPE}" -DCMAKE_TOOLCHAIN_FILE="$(Split-Path $(where.exe vcpkg.exe))\scripts\buildsystems\vcpkg.cmake"
+
+    - name: Build Sources
+      working-directory: ${{runner.workspace}}\build
+      run: cmake --build . --config "${env:BUILD_TYPE}"
+
+    - name: Test
+      working-directory: ${{runner.workspace}}\build\${{env.BUILD_TYPE}}
+      run: |
+        ./bsdiff.exe  bsdiff.exe bspatch.exe     patch.bsdiff
+        ./bspatch.exe bsdiff.exe bspatch_new.exe patch.bsdiff
+        if ((Get-FileHash bspatch.exe).hash -ne (Get-FileHash bspatch_new.exe).hash) { exit 1; }
