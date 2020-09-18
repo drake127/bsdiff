@@ -409,7 +409,7 @@ void err(int eval, const char * fmt, ...)
 }
 #define errx err
 
-static int bz2_write(struct bsdiff_stream* stream, const void* buffer, int size, int type)
+static int bz2_write(struct bsdiff_stream* stream, const void* buffer, int size, GCC_UNUSED int type)
 {
 	int bz2err;
 	BZFILE* bz2;
