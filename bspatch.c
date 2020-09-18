@@ -69,7 +69,7 @@ int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t 
 			return -1;
 
 		/* Read diff string */
-		if (stream->read(stream, target + newpos, ctrl[0], BSDIFF_READDIFF))
+		if (stream->read(stream, target + newpos, (int)ctrl[0], BSDIFF_READDIFF))
 			return -1;
 
 		/* Add old data to diff string */
@@ -86,7 +86,7 @@ int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t 
 			return -1;
 
 		/* Read extra string */
-		if (stream->read(stream, target + newpos, ctrl[1], BSDIFF_READEXTRA))
+		if (stream->read(stream, target + newpos, (int)ctrl[1], BSDIFF_READEXTRA))
 			return -1;
 
 		/* Adjust pointers */
