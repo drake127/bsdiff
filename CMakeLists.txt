@@ -5,24 +5,42 @@ project (
 
 # Sets global options.
 set(CMAKE_C_STANDARD 99)
-add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-Werror")
+if (MSVC)
+  string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+  add_compile_options("/wd4100")
+  add_compile_definitions(
+    "_CRT_SECURE_NO_WARNINGS"
+    "_CRT_NONSTDC_NO_WARNINGS"
+    "stat64=_stat64"
+    "fstat64=_fstat64"
+    "ATTR_UNUSED="
+    "ATTR_NORETURN=__declspec(noreturn)")
+else()
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
+  add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-Werror")
+  add_compile_definitions(
+    "_LARGEFILE64_SOURCE"
+    "ATTR_UNUSED=__attribute__((unused))"
+    "ATTR_NORETURN=__attribute__((noreturn))")
+endif()
 
 # Includes bzip2 library.
-find_package(BZip2 REQUIRED)
-include_directories(${BZIP2_INCLUDE_DIR})
+find_package(BZip2)
 
-# Builds bsdiff libraries.
+# Builds bsdiff library.
 add_library (static_bsdiff bsdiff.c bspatch.c)
 set_target_properties(static_bsdiff PROPERTIES OUTPUT_NAME bsdiff)
-add_library (shared_bsdiff SHARED bsdiff.c bspatch.c)
-set_target_properties(shared_bsdiff PROPERTIES OUTPUT_NAME bsdiff)
 
-# Builds bsdiff.
-add_executable(bsdiff bsdiff.c)
-target_compile_definitions(bsdiff PRIVATE BSDIFF_EXECUTABLE)
-target_link_libraries(bsdiff ${BZIP2_LIBRARIES})
+if (BZIP2_FOUND)
+  # Builds bsdiff.
+  add_executable(bsdiff bsdiff.c)
+  target_compile_definitions(bsdiff PRIVATE "BSDIFF_EXECUTABLE")
+  target_include_directories(bsdiff PRIVATE ${BZIP2_INCLUDE_DIR})
+  target_link_libraries(bsdiff ${BZIP2_LIBRARIES})
 
-#Builds bspatch.
-add_executable(bspatch bspatch.c)
-target_compile_definitions(bspatch PRIVATE BSPATCH_EXECUTABLE)
-target_link_libraries(bspatch ${BZIP2_LIBRARIES})
+  #Builds bspatch.
+  add_executable(bspatch bspatch.c)
+  target_compile_definitions(bspatch PRIVATE "BSPATCH_EXECUTABLE")
+  target_include_directories(bspatch PRIVATE ${BZIP2_INCLUDE_DIR})
+  target_link_libraries(bspatch ${BZIP2_LIBRARIES})
+endif()
