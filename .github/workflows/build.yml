@@ -54,9 +54,16 @@ jobs:
       run: cmake -E make_directory "${{runner.workspace}}\build"
 
     - name: Configure CMake
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{runner.workspace}}\build
       run: cmake "${env:GITHUB_WORKSPACE}" -DCMAKE_BUILD_TYPE="${env:BUILD_TYPE}" -DCMAKE_TOOLCHAIN_FILE="$(Split-Path $(where.exe vcpkg.exe))\scripts\buildsystems\vcpkg.cmake"
 
     - name: Build Sources
       working-directory: ${{runner.workspace}}\build
       run: cmake --build . --config "${env:BUILD_TYPE}"
+
+    - name: Test
+      working-directory: ${{runner.workspace}}\build\$BUILD_TYPE
+      run: |
+        ./bsdiff.exe  bsdiff.exe bspatch.exe  patch.0
+        ./bspatch.exe bsdiff.exe bspatch2.exe patch.0
+        (Get-FileHash bspatch.exe).hash -eq (Get-FileHash bsdiff.exe).hash
