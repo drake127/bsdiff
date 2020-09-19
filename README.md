@@ -1,5 +1,7 @@
-bsdiff/bspatch ![Build](https://github.com/drake127/bsdiff/workflows/Build%20&%20Test/badge.svg)
+bsdiff/bspatch
 =====
+[![Build & Test](https://github.com/drake127/bsdiff/workflows/Build%20&%20Test/badge.svg)](https://github.com/drake127/bsdiff/actions?query=workflow%3A%22Build+%26+Test%22)
+[![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 bsdiff and bspatch are libraries for building and applying patches to binary
 files.
 
@@ -17,7 +19,7 @@ separately from Colin's work, with the goal of making the core functionality
 easily embeddable in existing projects. Since Matthew no longer maintains his
 project, I took over with the original goal.
 
-License [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
+License
 -----
 Copyright 2003-2005 Colin Percival  
 Copyright 2012-2018 Matthew Endsley  
