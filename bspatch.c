@@ -63,13 +63,13 @@ int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t 
 		};
 
 		/* Sanity-check */
-		if (ctrl[0]<0 || ctrl[0]>INT_MAX ||
-			ctrl[1]<0 || ctrl[1]>INT_MAX ||
+		if (ctrl[0]<0 || ctrl[0]>INT64_MAX ||
+			ctrl[1]<0 || ctrl[1]>INT64_MAX ||
 			newpos+ctrl[0]>targetsize)
 			return -1;
 
 		/* Read diff string */
-		if (stream->read(stream, target + newpos, (int)ctrl[0], BSDIFF_READDIFF))
+		if (stream->read(stream, target + newpos, ctrl[0], BSDIFF_READDIFF))
 			return -1;
 
 		/* Add old data to diff string */
@@ -86,7 +86,7 @@ int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t 
 			return -1;
 
 		/* Read extra string */
-		if (stream->read(stream, target + newpos, (int)ctrl[1], BSDIFF_READEXTRA))
+		if (stream->read(stream, target + newpos, ctrl[1], BSDIFF_READEXTRA))
 			return -1;
 
 		/* Adjust pointers */
@@ -103,16 +103,18 @@ int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t 
 #include <string.h>
 #include "common.h"
 
-static int bz2_read(const struct bspatch_stream* stream, void* buffer, int length, ATTR_UNUSED int type)
+static int bz2_read(const struct bspatch_stream* stream, void* buffer, int64_t length, ATTR_UNUSED int type)
 {
-	int n;
-	int bz2err;
-	BZFILE* bz2;
+	int64_t bytes_read = 0;
 
-	bz2 = (BZFILE*)stream->opaque;
-	n = BZ2_bzRead(&bz2err, bz2, buffer, length);
-	if (n != length)
-		return -1;
+	int to_read;
+	while ((to_read = min(length - bytes_read, 1048576)) != 0)
+	{
+		int bz2err;
+		if (BZ2_bzRead(&bz2err, (BZFILE *)stream->opaque, (uint8_t *)buffer + bytes_read, to_read) != to_read)
+			return -1;
+		bytes_read += to_read;
+	}
 
 	return 0;
 }
