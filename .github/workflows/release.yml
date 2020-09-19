@@ -99,7 +99,7 @@ jobs:
     - name: Pack artifacts
       working-directory: ${{runner.workspace}}
       run: |
-        zip bsdiff-windows.zip windows-msvc/*
+        zip -j bsdiff-windows.zip windows-msvc/*
         tar czf bsdiff-ubuntu.tgz ubuntu-clang/* --transform='s/^ubuntu-clang/bsdiff/g'
 
     - name: Publish artifacts [windows-msvc]
