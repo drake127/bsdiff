@@ -59,9 +59,9 @@ jobs:
     
     - name: Download artifacts
       uses: actions/download-artifact@v2
-        with:
-          name: bsdiff-windows
-          path: ${{runner.workspace}}
+      with:
+        name: bsdiff-windows
+        path: ${{runner.workspace}}
 
     - name: Pack artifacts
       working-directory: ${{runner.workspace}}
