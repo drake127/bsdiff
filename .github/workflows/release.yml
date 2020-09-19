@@ -32,14 +32,11 @@ jobs:
       run: cmake --build . --config "${env:BUILD_TYPE}"
 
     - name: Upload artifacts
+      working-directory: ${{runner.workspace}}\build\${{env.BUILD_TYPE}}
       uses: actions/upload-artifact@v2
       with:
         name: bsdiff-windows
-        path: |
-          ${{runner.workspace}}\build\bsdiff.exe
-          ${{runner.workspace}}\build\bsdiff.lib
-          ${{runner.workspace}}\build\bspatch.exe
-          ${{runner.workspace}}\build\bz2.dll
+        path: ./**
 
   create_release:
     name: Create Release
