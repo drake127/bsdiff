@@ -9,7 +9,38 @@ on:
       - v*
 
 jobs:
-  windows:
+  ubuntu_clang:
+    name: ubuntu-clang
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout Sources
+      uses: actions/checkout@v2
+
+    - name: Create Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}/build
+      run: CC=clang cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+    - name: Build Sources
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config $BUILD_TYPE
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ubuntu-clang
+        path: |
+          ${{runner.workspace}}/build/bsdiff
+          ${{runner.workspace}}/build/bspatch
+          ${{runner.workspace}}/build/libbsdiff.a
+
+  windows_msvc:
     name: windows-msvc
     runs-on: windows-2019
 
@@ -34,15 +65,15 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: bsdiff-windows
+        name: windows-msvc
         path: ${{runner.workspace}}\build\${{env.BUILD_TYPE}}
 
   create_release:
     name: Create Release
-    needs: windows
+    needs: [ubuntu-clang, windows_msvc]
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
     steps:
     - name: Create Release
       id: create_release
@@ -50,25 +81,43 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
-        draft: false
-        prerelease: true
+        draft: true
+        prerelease: false
     
-    - name: Download artifacts
+    - name: Retrieve artifacts [windows-msvc]
       uses: actions/download-artifact@v2
       with:
-        name: bsdiff-windows
-        path: ${{runner.workspace}}
+        name: windows-msvc
+        path: ${{runner.workspace}}/windows-msvc
+
+    - name: Retrieve artifacts [ubuntu-clang]
+      uses: actions/download-artifact@v2
+      with:
+        name: ubuntu-clang
+        path: ${{runner.workspace}}/ubuntu-clang
 
     - name: Pack artifacts
-      working-directory: ${{runner.workspace}}
-      run: zip bsdiff-windows.zip bsdiff.exe bspatch.exe bsdiff.lib bz2.dll
+      working-directory: ${{runner.workspace}}/bsdiff-windows
+      run: |
+        zip bsdiff-windows.zip windows-msvc/*
+        tar czf bsdiff-ubuntu.tgz ubuntu-clang/* --transform='s/^ubuntu-clang/bsdiff/g'
 
-    - name: Upload Release Assets
+    - name: Publish artifacts [windows-msvc]
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        upload_url: ${{steps.create_release.outputs.upload_url}}
         asset_path: ${{runner.workspace}}/bsdiff-windows.zip
         asset_name: bsdiff-windows.zip
         asset_content_type: application/zip
+
+    - name: Publish artifacts [ubuntu-clang]
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      with:
+        upload_url: ${{steps.create_release.outputs.upload_url}}
+        asset_path: ${{runner.workspace}}/bsdiff-ubuntu.zip
+        asset_name: bsdiff-ubuntu.tgz
+        asset_content_type: application/gzip
