@@ -70,7 +70,7 @@ jobs:
 
   create_release:
     name: Create Release
-    needs: [ubuntu-clang, windows_msvc]
+    needs: [ubuntu_clang, windows_msvc]
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
