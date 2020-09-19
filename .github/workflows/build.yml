@@ -91,7 +91,7 @@ jobs:
         cmake --build . --config "${env:BUILD_TYPE}"
 
     - name: Test
-      working-directory: ${{runner.workspace}}\build\${{env.BUILD_TYPE}}
+      working-directory: ${{runner.workspace}}\build\x64\${{env.BUILD_TYPE}}
       run: |
         ./bsdiff.exe  bsdiff.exe bspatch.exe     patch.bsdiff
         ./bspatch.exe bsdiff.exe bspatch_new.exe patch.bsdiff
