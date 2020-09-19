@@ -62,7 +62,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: ./bsdiff bsdiff bspatch patch.bsdiff && ./bspatch bsdiff bspatch_new patch.bsdiff && cmp -s bspatch bspatch_new
 
-  windows:
+  windows_msvc:
     name: windows-msvc
     runs-on: windows-2019
 
