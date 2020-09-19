@@ -43,13 +43,13 @@ jobs:
 
   create_release:
     name: Create Release
-    id: create_release
     needs: windows
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Create Release
+      id: create_release
       uses: actions/create-release@v1
       with:
         tag_name: ${{ github.ref }}
