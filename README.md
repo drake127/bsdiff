@@ -1,7 +1,7 @@
 bsdiff/bspatch
 =====
 [![Build & Test](https://github.com/drake127/bsdiff/workflows/Build%20&%20Test/badge.svg)](https://github.com/drake127/bsdiff/actions?query=workflow%3A%22Build+%26+Test%22)
-[![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
+[![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)  
 bsdiff and bspatch are libraries for building and applying patches to binary
 files.
 
