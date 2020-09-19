@@ -1,0 +1,78 @@
+name: Create Release
+
+env:
+  BUILD_TYPE: Release
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  windows:
+    name: windows-msvc
+    runs-on: windows-2019
+
+    steps:
+    - name: Checkout Sources
+      uses: actions/checkout@v2
+      
+    - name: Build Dependencies
+      run: vcpkg.exe install bzip2:x64-windows
+
+    - name: Create Environment
+      run: cmake -E make_directory "${{runner.workspace}}\build"
+
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}\build
+      run: cmake "${env:GITHUB_WORKSPACE}" -DCMAKE_BUILD_TYPE="${env:BUILD_TYPE}" -DCMAKE_TOOLCHAIN_FILE="$(Split-Path $(where.exe vcpkg.exe))\scripts\buildsystems\vcpkg.cmake"
+
+    - name: Build Sources
+      working-directory: ${{runner.workspace}}\build
+      run: cmake --build . --config "${env:BUILD_TYPE}"
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: bsdiff-windows
+        path: |
+          ${{runner.workspace}}\build\bsdiff.exe
+          ${{runner.workspace}}\build\bsdiff.lib
+          ${{runner.workspace}}\build\bspatch.exe
+          ${{runner.workspace}}\build\bz2.dll
+
+  create_release:
+    name: Create Release
+    id: create_release
+    needs: windows
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Create Release
+      uses: actions/create-release@v1
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        draft: false
+        prerelease: true
+    
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+        with:
+          name: bsdiff-windows
+          path: ${{runner.workspace}}
+
+    - name: Pack artifacts
+      working-directory: ${{runner.workspace}}
+      run: zip bsdiff-windows.zip bsdiff.exe bspatch.exe bsdiff.lib bz2.dll
+
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ${{runner.workspace}}/bsdiff-windows.zip
+          asset_name: bsdiff-windows.zip
+          asset_content_type: application/zip
