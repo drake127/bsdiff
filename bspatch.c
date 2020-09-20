@@ -28,25 +28,16 @@
 #include <limits.h>
 #include "bspatch.h"
 
-static int64_t offtin(uint8_t *buf)
+static int64_t offtin(const uint8_t * buf)
 {
-	int64_t y;
-
-	y=buf[7]&0x7F;
-	y=y*256;y+=buf[6];
-	y=y*256;y+=buf[5];
-	y=y*256;y+=buf[4];
-	y=y*256;y+=buf[3];
-	y=y*256;y+=buf[2];
-	y=y*256;y+=buf[1];
-	y=y*256;y+=buf[0];
-
-	if(buf[7]&0x80) y=-y;
-
-	return y;
+	int64_t x = *(const int64_t *)buf;
+	if (x >= 0 || x == INT64_MIN)
+		return x;
+	else
+		return (~x + 1) | INT64_MIN;
 }
 
-int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t targetsize, struct bspatch_stream* stream)
+int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target, const int64_t targetsize, struct bspatch_stream * stream)
 {
 	uint8_t buf[8];
 	int64_t oldpos,newpos;
@@ -63,9 +54,7 @@ int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t 
 		};
 
 		/* Sanity-check */
-		if (ctrl[0]<0 || ctrl[0]>INT64_MAX ||
-			ctrl[1]<0 || ctrl[1]>INT64_MAX ||
-			newpos+ctrl[0]>targetsize)
+		if (ctrl[0]<0 || ctrl[0]>targetsize-newpos)
 			return -1;
 
 		/* Read diff string */
@@ -82,7 +71,7 @@ int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t 
 		oldpos+=ctrl[0];
 
 		/* Sanity-check */
-		if(newpos+ctrl[1]>targetsize)
+		if(ctrl[1]<0 || ctrl[1]>targetsize-newpos)
 			return -1;
 
 		/* Read extra string */
@@ -103,15 +92,14 @@ int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t 
 #include <string.h>
 #include "common.h"
 
-static int bz2_read(const struct bspatch_stream* stream, void* buffer, int64_t length, ATTR_UNUSED int type)
+static int bz2_read(const struct bspatch_stream * stream, uint8_t * buffer, size_t length, ATTR_UNUSED enum stream_type type)
 {
-	int64_t bytes_read = 0;
-
+	size_t bytes_read = 0;
 	int to_read;
 	while ((to_read = min(length - bytes_read, 1048576)) != 0)
 	{
 		int bz2err;
-		if (BZ2_bzRead(&bz2err, (BZFILE *)stream->opaque, (uint8_t *)buffer + bytes_read, to_read) != to_read)
+		if (BZ2_bzRead(&bz2err, (BZFILE *)stream->opaque, buffer + bytes_read, to_read) != to_read)
 			return -1;
 		bytes_read += to_read;
 	}
