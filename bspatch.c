@@ -56,7 +56,7 @@ int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target, 
 			return -1;
 
 		// Adds old data to the diff data.
-		if (oldpos < 0 || oldpos + ctrl[0] < 0 || oldpos + ctrl[0] < sourcesize)
+		if (oldpos < 0 || oldpos + ctrl[0] < 0 || oldpos + ctrl[0] > sourcesize)
 			return -1;
 		for(int i = 0; i < ctrl[0]; ++i)
 			target[newpos+i] += source[oldpos+i];
