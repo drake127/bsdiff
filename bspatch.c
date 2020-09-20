@@ -34,7 +34,8 @@ static inline void offtin(int64_t * x)
 		*x = (~*x + 1) | INT64_MIN;
 }
 
-int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target, const int64_t targetsize, struct bspatch_stream * stream)
+int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target,
+            const int64_t targetsize, struct bspatch_stream * stream)
 {
 	int64_t oldpos = 0, newpos = 0;
 	int64_t ctrl[3];
@@ -87,7 +88,8 @@ int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target, 
 #include <string.h>
 #include "common.h"
 
-static int bz2_read(const struct bspatch_stream * stream, void * buffer, size_t length, ATTR_UNUSED enum bspatch_stream_type type)
+static int bz2_read(const struct bspatch_stream * stream, void * buffer,
+                    size_t length, ATTR_UNUSED enum bspatch_stream_type type)
 {
 	size_t bytes_read = 0;
 	int to_read;
