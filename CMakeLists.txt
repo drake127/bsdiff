@@ -28,18 +28,18 @@ endif()
 find_package(BZip2)
 
 # Builds bsdiff library.
-add_library (static_bsdiff bsdiff.c bspatch.c)
+add_library(static_bsdiff bsdiff.c bsdiff.h bspatch.c bspatch.h)
 set_target_properties(static_bsdiff PROPERTIES OUTPUT_NAME bsdiff)
 
 if (BZIP2_FOUND)
   # Builds bsdiff.
-  add_executable(bsdiff bsdiff.c)
+  add_executable(bsdiff bsdiff.c bsdiff.h bsdiff_common.h)
   target_compile_definitions(bsdiff PRIVATE "BSDIFF_EXECUTABLE")
   target_include_directories(bsdiff PRIVATE ${BZIP2_INCLUDE_DIR})
   target_link_libraries(bsdiff ${BZIP2_LIBRARIES})
 
   #Builds bspatch.
-  add_executable(bspatch bspatch.c)
+  add_executable(bspatch bspatch.c bspatch.h bsdiff_common.h)
   target_compile_definitions(bspatch PRIVATE "BSPATCH_EXECUTABLE")
   target_include_directories(bspatch PRIVATE ${BZIP2_INCLUDE_DIR})
   target_link_libraries(bspatch ${BZIP2_LIBRARIES})
