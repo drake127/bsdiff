@@ -25,12 +25,12 @@ Copyright 2003-2005 Colin Percival
 Copyright 2012-2018 Matthew Endsley  
 Copyright 2018-2020 Emanuel Komínek
 
-This project is governed by the BSD 2-clause license. For details see the file
+This project is governed by the BSD 2-clause license. For details, see the file
 titled LICENSE in the project root folder.
 
 Overview
 -----
-There are two separate libraries in the project, bsdiff and bspatch. Each are
+There are two separate libraries in the project: bsdiff and bspatch. Each are
 self contained in bsdiff.c and bspatch.c. The easiest way to integrate is to
 simply copy the c file to your source folder and build it but static library is
 also provided.
