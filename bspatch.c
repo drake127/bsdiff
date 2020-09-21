@@ -28,9 +28,10 @@
 #include <limits.h>
 #include "bspatch.h"
 
+// Converts signed magnitude to two's complement.
 static inline void offtin(int64_t * x)
 {
-	if (*x < 0 && *x != INT64_MIN)
+	if (*x < 0)
 		*x = (~*x + 1) | INT64_MIN;
 }
 
@@ -59,7 +60,7 @@ int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target,
 		// Adds old data to the diff data.
 		if (oldpos < 0 || oldpos + ctrl[0] < 0 || oldpos + ctrl[0] > sourcesize)
 			return -1;
-		for(int i = 0; i < ctrl[0]; ++i)
+		for(int64_t i = 0; i < ctrl[0]; ++i)
 			target[newpos+i] += source[oldpos+i];
 
 		// Adjusts position pointers.
