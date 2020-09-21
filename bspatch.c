@@ -94,7 +94,7 @@ static int bz2_read(const struct bspatch_stream * stream, void * buffer,
 {
 	size_t bytes_read = 0;
 	int to_read;
-	while ((to_read = min(length - bytes_read, 1048576)) != 0)
+	while ((to_read = (int)min(length - bytes_read, 1048576)) != 0)
 	{
 		int bz2err;
 		if (BZ2_bzRead(&bz2err, (BZFILE *)stream->opaque, (uint8_t *)buffer + bytes_read, to_read) != to_read)
