@@ -26,32 +26,37 @@
  */
 
 #ifndef BSDIFF_H
-# define BSDIFF_H
+#define BSDIFF_H
 
-# include <stddef.h>
-# include <stdint.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif // (__cplusplus)
 
-#define BSDIFF_WRITECONTROL 0
-#define BSDIFF_WRITEDIFF    1
-#define BSDIFF_WRITEEXTRA   2
+enum bsdiff_stream_type
+{
+	BSDIFF_WRITECONTROL,
+	BSDIFF_WRITEDIFF,
+	BSDIFF_WRITEEXTRA
+};
 
 struct bsdiff_stream
 {
-	void* opaque;
+	void * opaque;
 
-	void* (*malloc)(size_t size);
-	void (*free)(void* ptr);
-	int (*write)(struct bsdiff_stream* stream, const void* buffer, int size, int type);
+	void * (* malloc)(size_t size);
+	void (* free)(void * ptr);
+	int (* write)(struct bsdiff_stream * stream, const void * buffer,
+	              size_t size, enum bsdiff_stream_type type);
 };
 
-int bsdiff(const uint8_t* source, int64_t sourcesize, const uint8_t* target, int64_t targetsize, struct bsdiff_stream* stream);
+int bsdiff(const uint8_t * source, int64_t sourcesize, const uint8_t * target,
+           int64_t targetsize, struct bsdiff_stream * stream);
 
 #ifdef __cplusplus
 }
-#endif
+#endif // (__cplusplus)
 
-#endif
+#endif // (BSDIFF_H)

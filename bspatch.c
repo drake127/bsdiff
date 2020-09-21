@@ -28,68 +28,54 @@
 #include <limits.h>
 #include "bspatch.h"
 
-static int64_t offtin(uint8_t *buf)
+// Converts signed magnitude to two's complement.
+static inline void offtin(int64_t * x)
 {
-	int64_t y;
-
-	y=buf[7]&0x7F;
-	y=y*256;y+=buf[6];
-	y=y*256;y+=buf[5];
-	y=y*256;y+=buf[4];
-	y=y*256;y+=buf[3];
-	y=y*256;y+=buf[2];
-	y=y*256;y+=buf[1];
-	y=y*256;y+=buf[0];
-
-	if(buf[7]&0x80) y=-y;
-
-	return y;
+	if (*x < 0)
+		*x = (~*x + 1) | INT64_MIN;
 }
 
-int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t targetsize, struct bspatch_stream* stream)
+int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target,
+            const int64_t targetsize, struct bspatch_stream * stream)
 {
-	uint8_t buf[8];
-	int64_t oldpos,newpos;
+	int64_t oldpos = 0, newpos = 0;
 	int64_t ctrl[3];
-	int64_t i;
 
-	oldpos=0;newpos=0;
-	while(newpos<targetsize) {
-		/* Read control data */
-		for(i=0;i<=2;i++) {
-			if (stream->read(stream, buf, 8, BSDIFF_READCONTROL))
-				return -1;
-			ctrl[i]=offtin(buf);
-		};
+	while (newpos < targetsize)
+	{
+		// Reads control data block.
+		if (stream->read(stream, ctrl, sizeof(ctrl), BSDIFF_READCONTROL))
+			return -1;
+		for (int i = 0; i <= 2; ++i)
+			offtin(ctrl + i);
 
-		/* Sanity-check */
-		if (ctrl[0]<0 || ctrl[0]>INT_MAX ||
-			ctrl[1]<0 || ctrl[1]>INT_MAX ||
-			newpos+ctrl[0]>targetsize)
+		// Checks sanity of diff control data.
+		if (ctrl[0] < 0 || ctrl[0] > targetsize - newpos)
 			return -1;
 
-		/* Read diff string */
-		if (stream->read(stream, target + newpos, (int)ctrl[0], BSDIFF_READDIFF))
+		// Reads diff data block.
+		if (stream->read(stream, target + newpos, ctrl[0], BSDIFF_READDIFF))
 			return -1;
 
-		/* Add old data to diff string */
-		for(i=0;i<ctrl[0];i++)
-			if((oldpos+i>=0) && (oldpos+i<sourcesize))
-				target[newpos+i]+=source[oldpos+i];
+		// Adds old data to the diff data.
+		if (oldpos < 0 || oldpos + ctrl[0] < 0 || oldpos + ctrl[0] > sourcesize)
+			return -1;
+		for(int64_t i = 0; i < ctrl[0]; ++i)
+			target[newpos+i] += source[oldpos+i];
 
-		/* Adjust pointers */
-		newpos+=ctrl[0];
-		oldpos+=ctrl[0];
+		// Adjusts position pointers.
+		newpos += ctrl[0];
+		oldpos += ctrl[0];
 
-		/* Sanity-check */
-		if(newpos+ctrl[1]>targetsize)
+		// Checks sanity of extra control data.
+		if(ctrl[1] < 0 || ctrl[1] > targetsize - newpos)
 			return -1;
 
-		/* Read extra string */
-		if (stream->read(stream, target + newpos, (int)ctrl[1], BSDIFF_READEXTRA))
+		// Reads extra data block.
+		if (stream->read(stream, target + newpos, ctrl[1], BSDIFF_READEXTRA))
 			return -1;
 
-		/* Adjust pointers */
+		// Adjust position pointers.
 		newpos+=ctrl[1];
 		oldpos+=ctrl[2];
 	};
@@ -103,16 +89,18 @@ int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t 
 #include <string.h>
 #include "common.h"
 
-static int bz2_read(const struct bspatch_stream* stream, void* buffer, int length, ATTR_UNUSED int type)
+static int bz2_read(const struct bspatch_stream * stream, void * buffer,
+                    size_t length, ATTR_UNUSED enum bspatch_stream_type type)
 {
-	int n;
-	int bz2err;
-	BZFILE* bz2;
-
-	bz2 = (BZFILE*)stream->opaque;
-	n = BZ2_bzRead(&bz2err, bz2, buffer, length);
-	if (n != length)
-		return -1;
+	size_t bytes_read = 0;
+	int to_read;
+	while ((to_read = (int)min(length - bytes_read, 1048576)) != 0)
+	{
+		int bz2err;
+		if (BZ2_bzRead(&bz2err, (BZFILE *)stream->opaque, (uint8_t *)buffer + bytes_read, to_read) != to_read)
+			return -1;
+		bytes_read += to_read;
+	}
 
 	return 0;
 }
@@ -148,7 +136,7 @@ int main(int argc, char * argv[])
 		errx(1, "Corrupt patch header (magic)\n");
 
 	// Reads target size from header
-	targetsize = offtin(header+16);
+	targetsize = *(int64_t *)(header+16);
 	if(targetsize < 0)
 		errx(1, "Corrupt patch header (target size)\n");
 

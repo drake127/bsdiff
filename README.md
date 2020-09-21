@@ -25,12 +25,12 @@ Copyright 2003-2005 Colin Percival
 Copyright 2012-2018 Matthew Endsley  
 Copyright 2018-2020 Emanuel Komínek
 
-This project is governed by the BSD 2-clause license. For details see the file
+This project is governed by the BSD 2-clause license. For details, see the file
 titled LICENSE in the project root folder.
 
 Overview
 -----
-There are two separate libraries in the project, bsdiff and bspatch. Each are
+There are two separate libraries in the project: bsdiff and bspatch. Each are
 self contained in bsdiff.c and bspatch.c. The easiest way to integrate is to
 simply copy the c file to your source folder and build it but static library is
 also provided.
@@ -72,28 +72,32 @@ executables.
 Examples
 -----
 Each project has an optional main function that serves as an example for using
-the library. Simply defined `BSDIFF_EXECUTABLE` or `BSPATCH_EXECUTABLE` to
-enable building the standalone tools.
+the library. Simply define `BSDIFF_EXECUTABLE` or `BSPATCH_EXECUTABLE` to enable
+building the standalone tools.
 
 Reference
 ---------
 ### bsdiff
 
-	#define BSDIFF_WRITECONTROL 0
-	#define BSDIFF_WRITEDIFF    1
-	#define BSDIFF_WRITEEXTRA   2
-	
-	struct bsdiff_stream
+	enum bsdiff_stream_type
 	{
-		void* opaque;
-		void* (*malloc)(size_t size);
-		void  (*free)(void* ptr);
-		int   (*write)(struct bsdiff_stream* stream,
-					   const void* buffer, int size, int type);
+		BSDIFF_WRITECONTROL,
+		BSDIFF_WRITEDIFF,
+		BSDIFF_WRITEEXTRA
 	};
 
-	int bsdiff(const uint8_t* source, int64_t sourcesize, const uint8_t* target,
-	           int64_t targetsize, struct bsdiff_stream* stream);
+	struct bsdiff_stream
+	{
+		void * opaque;
+
+		void * (* malloc)(size_t size);
+		void (* free)(void * ptr);
+		int (* write)(struct bsdiff_stream * stream, const void * buffer, size_t size,
+		              enum bsdiff_stream_type type);
+	};
+
+	int bsdiff(const uint8_t * source, int64_t sourcesize, const uint8_t * target,
+	           int64_t targetsize, struct bsdiff_stream * stream);
 
 In order to use `bsdiff`, you need to define functions for allocating memory and
 writing binary data. This behavior is controlled by the `stream` parameter
@@ -115,19 +119,22 @@ compress output data.
 
 ### bspatch
 
-	#define BSDIFF_READCONTROL 0
-	#define BSDIFF_READDIFF    1
-	#define BSDIFF_READEXTRA   2 
+	enum bspatch_stream_type
+	{
+		BSDIFF_READCONTROL,
+		BSDIFF_READDIFF,
+		BSDIFF_READEXTRA,
+	};
 
 	struct bspatch_stream
 	{
-		void* opaque;
-		int (*read)(const struct bspatch_stream* stream,
-		            void* buffer, int length, int type);
+		void * opaque;
+		int (* read)(const struct bspatch_stream * stream, void * buffer, size_t length,
+		             enum bspatch_stream_type type);
 	};
 
-	int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target,
-	            int64_t targetsize, struct bspatch_stream* stream);
+	int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target,
+	            const int64_t targetsize, struct bspatch_stream * stream);
 
 The `bspatch` function transforms the data for a file using data generated from
 `bsdiff`. The caller takes care of loading the old file and allocating space for
