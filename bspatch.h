@@ -45,10 +45,12 @@ enum bspatch_stream_type
 struct bspatch_stream
 {
 	void * opaque;
-	int (* read)(const struct bspatch_stream * stream, void * buffer, size_t length, enum bspatch_stream_type type);
+	int (* read)(const struct bspatch_stream * stream, void * buffer,
+	             size_t length, enum bspatch_stream_type type);
 };
 
-int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target, const int64_t targetsize, struct bspatch_stream * stream);
+int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target,
+            const int64_t targetsize, struct bspatch_stream * stream);
 
 #ifdef __cplusplus
 }

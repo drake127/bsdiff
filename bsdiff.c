@@ -184,25 +184,15 @@ static int64_t search(const int64_t *I,const uint8_t *old,int64_t oldsize,
 	};
 }
 
-static void offtout(int64_t x,uint8_t *buf)
+// Converts two's complement to signed magnitude.
+static inline void offtout(int64_t * x)
 {
-	int64_t y;
-
-	if(x<0) y=-x; else y=x;
-
-	buf[0]=y%256;y-=buf[0];
-	y=y/256;buf[1]=y%256;y-=buf[1];
-	y=y/256;buf[2]=y%256;y-=buf[2];
-	y=y/256;buf[3]=y%256;y-=buf[3];
-	y=y/256;buf[4]=y%256;y-=buf[4];
-	y=y/256;buf[5]=y%256;y-=buf[5];
-	y=y/256;buf[6]=y%256;y-=buf[6];
-	y=y/256;buf[7]=y%256;
-
-	if(x<0) buf[7]|=0x80;
+	if (*x < 0)
+		*x = (~*x + 1) | INT64_MIN;
 }
 
-static int64_t writedata(struct bsdiff_stream* stream, const void* buffer, int64_t length, int type)
+static int64_t writedata(struct bsdiff_stream * stream, const void * buffer,
+                         int64_t length, enum bsdiff_stream_type type)
 {
 	int64_t result = 0;
 
@@ -245,7 +235,6 @@ static int bsdiff_internal(const struct bsdiff_request req)
 	int64_t overlap,Ss,lens;
 	int64_t i;
 	uint8_t *buffer;
-	uint8_t buf[8 * 3];
 
 	if((V=req.stream->malloc((req.oldsize+1)*sizeof(int64_t)))==NULL) return -1;
 	I = req.I;
@@ -317,12 +306,12 @@ static int bsdiff_internal(const struct bsdiff_request req)
 
 			if (ctrlnext[0]) {
 				if (ctrlcur[0]||ctrlcur[1]||ctrlcur[2]) {
-					offtout(ctrlcur[0],buf);
-					offtout(ctrlcur[1],buf+8);
-					offtout(ctrlcur[2],buf+16);
+					offtout(&ctrlcur[0]);
+					offtout(&ctrlcur[1]);
+					offtout(&ctrlcur[2]);
 
 					/* Write control data */
-					if (writedata(req.stream, buf, sizeof(buf), BSDIFF_WRITECONTROL))
+					if (writedata(req.stream, ctrlcur, sizeof(ctrlcur), BSDIFF_WRITECONTROL))
 						return -1;
 
 					/* Write diff data */
@@ -355,12 +344,12 @@ static int bsdiff_internal(const struct bsdiff_request req)
 	};
 
 	if (ctrlcur[0]||ctrlcur[1]) {
-		offtout(ctrlcur[0],buf);
-		offtout(ctrlcur[1],buf+8);
-		offtout(ctrlcur[2],buf+16);
+		offtout(ctrlcur);
+		offtout(ctrlcur + 1);
+		offtout(ctrlcur + 2);
 
 		/* Write control data */
-		if (writedata(req.stream, buf, sizeof(buf), BSDIFF_WRITECONTROL))
+		if (writedata(req.stream, ctrlcur, sizeof(ctrlcur), BSDIFF_WRITECONTROL))
 			return -1;
 
 		/* Write diff data */
@@ -412,7 +401,8 @@ int bsdiff(const uint8_t* source, int64_t sourcesize, const uint8_t* target, int
 #include <bzlib.h>
 #include "common.h"
 
-static int bz2_write(struct bsdiff_stream* stream, const void* buffer, int size, ATTR_UNUSED int type)
+static int bz2_write(struct bsdiff_stream * stream, const void * buffer,
+                     size_t size, ATTR_UNUSED enum bsdiff_stream_type type)
 {
 	int bz2err;
 	BZFILE* bz2;
@@ -430,7 +420,6 @@ int main(int argc,char *argv[])
 	FILE * fp;
 	uint8_t * source, * target;
 	int64_t sourcesize, targetsize;
-	uint8_t i64buf[8];
 	BZFILE * bz2;
 	int bz2err;
 	struct bsdiff_stream stream;
@@ -449,9 +438,8 @@ int main(int argc,char *argv[])
 		errx(1, "fopen (%s)", argv[3]);
 
 	// Writes patch header (signature + newsize)
-	offtout(targetsize, i64buf);
 	if (fwrite("ENDSLEY/BSDIFF43", 1, 16, fp) != 16 ||
-		fwrite(i64buf, 1, sizeof(i64buf), fp) != sizeof(i64buf))
+		fwrite(&targetsize, 1, sizeof(targetsize), fp) != sizeof(targetsize))
 		errx(1, "fwrite (%s)", argv[3]);
 
 	// Opens bzip2 stream.
