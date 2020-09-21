@@ -26,29 +26,32 @@
  */
 
 #ifndef BSPATCH_H
-# define BSPATCH_H
+#define BSPATCH_H
 
-# include <stdint.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif // (__cplusplus)
 
-#define BSDIFF_READCONTROL 0
-#define BSDIFF_READDIFF    1
-#define BSDIFF_READEXTRA   2
+enum bspatch_stream_type
+{
+	BSDIFF_READCONTROL,
+	BSDIFF_READDIFF,
+	BSDIFF_READEXTRA,
+};
 
 struct bspatch_stream
 {
-	void* opaque;
-	int (*read)(const struct bspatch_stream* stream, void* buffer, int length, int type);
+	void * opaque;
+	int (* read)(const struct bspatch_stream * stream, void * buffer, size_t length, enum bspatch_stream_type type);
 };
 
-int bspatch(const uint8_t* source, int64_t sourcesize, uint8_t* target, int64_t targetsize, struct bspatch_stream* stream);
+int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target, const int64_t targetsize, struct bspatch_stream * stream);
 
 #ifdef __cplusplus
 }
-#endif
+#endif // (__cplusplus)
 
 #endif
-
