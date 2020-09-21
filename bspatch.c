@@ -87,7 +87,7 @@ int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target,
 
 #include <bzlib.h>
 #include <string.h>
-#include "common.h"
+#include "bsdiff_common.h"
 
 static int bz2_read(const struct bspatch_stream * stream, void * buffer,
                     size_t length, ATTR_UNUSED enum bspatch_stream_type type)

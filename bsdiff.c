@@ -399,7 +399,7 @@ int bsdiff(const uint8_t* source, int64_t sourcesize, const uint8_t* target, int
 #if defined(BSDIFF_EXECUTABLE)
 
 #include <bzlib.h>
-#include "common.h"
+#include "bsdiff_common.h"
 
 static int bz2_write(struct bsdiff_stream * stream, const void * buffer,
                      size_t size, ATTR_UNUSED enum bsdiff_stream_type type)
