@@ -72,8 +72,8 @@ executables.
 Examples
 -----
 Each project has an optional main function that serves as an example for using
-the library. Simply defined `BSDIFF_EXECUTABLE` or `BSPATCH_EXECUTABLE` to
-enable building the standalone tools.
+the library. Simply define `BSDIFF_EXECUTABLE` or `BSPATCH_EXECUTABLE` to enable
+building the standalone tools.
 
 Reference
 ---------
