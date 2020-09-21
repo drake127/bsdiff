@@ -32,10 +32,13 @@
 #include <string.h>
 
 #define MIN(x,y) (((x)<(y)) ? (x) : (y))
+#define MEDIAN3(a,b,c) (((a)<(b)) ? \
+	((b)<(c) ? (b) : ((a)<(c) ? (c) : (a))) : \
+	((b)>(c) ? (b) : ((a)>(c) ? (c) : (a))))
 
 static void split(int64_t *I,int64_t *V,int64_t start,int64_t len,int64_t h)
 {
-	int64_t i,j,k,x,tmp,jj,kk;
+	int64_t i,j,k,x,y,z,tmp,jj,kk;
 
 	if(len<16) {
 		for(k=start;k<start+len;k+=j) {
@@ -56,7 +59,20 @@ static void split(int64_t *I,int64_t *V,int64_t start,int64_t len,int64_t h)
 		return;
 	};
 
-	x=V[I[start+len/2]+h];
+	/* Select pivot, algorithm by Bentley & McIlroy */
+	j=start+len/2;
+	k=start+len-1;
+	x=V[I[j]+h];
+	y=V[I[start]+h];
+	z=V[I[k]+h];
+	if(len>40) {  /* Big array: Pseudomedian of 9 */
+		tmp=len/8;
+		x=MEDIAN3(x,V[I[j-tmp]+h],V[I[j+tmp]+h]);
+		y=MEDIAN3(y,V[I[start+tmp]+h],V[I[start+tmp+tmp]+h]);
+		z=MEDIAN3(z,V[I[k-tmp]+h],V[I[k-tmp-tmp]+h]);
+	};  /* Else medium array: Pseudomedian of 3 */
+	x=MEDIAN3(x,y,z);
+
 	jj=0;kk=0;
 	for(i=start;i<start+len;i++) {
 		if(V[I[i]+h]<x) jj++;
