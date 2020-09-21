@@ -92,10 +92,12 @@ Reference
 
 		void * (* malloc)(size_t size);
 		void (* free)(void * ptr);
-		int (* write)(struct bsdiff_stream * stream, const void * buffer, size_t size, enum bsdiff_stream_type type);
+		int (* write)(struct bsdiff_stream * stream, const void * buffer, size_t size,
+		              enum bsdiff_stream_type type);
 	};
 
-	int bsdiff(const uint8_t * source, int64_t sourcesize, const uint8_t * target, int64_t targetsize, struct bsdiff_stream * stream);
+	int bsdiff(const uint8_t * source, int64_t sourcesize, const uint8_t * target,
+	           int64_t targetsize, struct bsdiff_stream * stream);
 
 In order to use `bsdiff`, you need to define functions for allocating memory and
 writing binary data. This behavior is controlled by the `stream` parameter
@@ -127,10 +129,12 @@ compress output data.
 	struct bspatch_stream
 	{
 		void * opaque;
-		int (* read)(const struct bspatch_stream * stream, void * buffer, size_t length, enum bspatch_stream_type type);
+		int (* read)(const struct bspatch_stream * stream, void * buffer, size_t length,
+		             enum bspatch_stream_type type);
 	};
 
-	int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target, const int64_t targetsize, struct bspatch_stream * stream);
+	int bspatch(const uint8_t * source, const int64_t sourcesize, uint8_t * target,
+	            const int64_t targetsize, struct bspatch_stream * stream);
 
 The `bspatch` function transforms the data for a file using data generated from
 `bsdiff`. The caller takes care of loading the old file and allocating space for
