@@ -40,6 +40,37 @@ jobs:
           ${{runner.workspace}}/build/bspatch
           ${{runner.workspace}}/build/libbsdiff.a
 
+  macos_clang:
+    name: macos-clang
+    runs-on: macos-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout Sources
+      uses: actions/checkout@v2
+
+    - name: Create Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}/build
+      run: CC=clang cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+    - name: Build Sources
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config $BUILD_TYPE
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: macos-clang
+        path: |
+          ${{runner.workspace}}/build/bsdiff
+          ${{runner.workspace}}/build/bspatch
+          ${{runner.workspace}}/build/libbsdiff.a
+
   windows_msvc:
     name: windows-msvc
     runs-on: windows-2019
@@ -82,7 +113,7 @@ jobs:
 
   create_release:
     name: Create Release
-    needs: [ubuntu_clang, windows_msvc]
+    needs: [ubuntu_clang, macos_clang, windows_msvc]
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -97,6 +128,18 @@ jobs:
         prerelease: false
         commitish: master
 
+    - name: Retrieve artifacts [ubuntu-clang]
+      uses: actions/download-artifact@v2
+      with:
+        name: ubuntu-clang
+        path: ${{runner.workspace}}/ubuntu-clang
+
+    - name: Retrieve artifacts [macos-clang]
+      uses: actions/download-artifact@v2
+      with:
+        name: macos-clang
+        path: ${{runner.workspace}}/macos-clang
+
     - name: Retrieve artifacts [windows-msvc-x64]
       uses: actions/download-artifact@v2
       with:
@@ -109,18 +152,33 @@ jobs:
         name: windows-msvc-arm64
         path: ${{runner.workspace}}/windows-msvc-arm64
 
-    - name: Retrieve artifacts [ubuntu-clang]
-      uses: actions/download-artifact@v2
-      with:
-        name: ubuntu-clang
-        path: ${{runner.workspace}}/ubuntu-clang
-
     - name: Pack artifacts
       working-directory: ${{runner.workspace}}
       run: |
+        tar czf bsdiff-ubuntu.tgz ubuntu-clang/* --transform='s/^ubuntu-clang/bsdiff/g'
+        tar czf bsdiff-macos.tgz macos-clang/* --transform='s/^macos-clang/bsdiff/g'
         zip -j bsdiff-windows-x64.zip   windows-msvc-x64/*
         zip -j bsdiff-windows-arm64.zip windows-msvc-arm64/*
-        tar czf bsdiff-ubuntu.tgz ubuntu-clang/* --transform='s/^ubuntu-clang/bsdiff/g'
+
+    - name: Publish artifacts [ubuntu-clang]
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      with:
+        upload_url: ${{steps.create_release.outputs.upload_url}}
+        asset_path: ${{runner.workspace}}/bsdiff-ubuntu.tgz
+        asset_name: bsdiff-ubuntu.tgz
+        asset_content_type: application/gzip
+
+    - name: Publish artifacts [macos-clang]
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      with:
+        upload_url: ${{steps.create_release.outputs.upload_url}}
+        asset_path: ${{runner.workspace}}/bsdiff-macos.tgz
+        asset_name: bsdiff-macos.tgz
+        asset_content_type: application/gzip
 
     - name: Publish artifacts [windows-msvc-x64]
       uses: actions/upload-release-asset@v1
@@ -141,13 +199,3 @@ jobs:
         asset_path: ${{runner.workspace}}/bsdiff-windows-arm64.zip
         asset_name: bsdiff-windows-arm64.zip
         asset_content_type: application/zip
-
-    - name: Publish artifacts [ubuntu-clang]
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      with:
-        upload_url: ${{steps.create_release.outputs.upload_url}}
-        asset_path: ${{runner.workspace}}/bsdiff-ubuntu.tgz
-        asset_name: bsdiff-ubuntu.tgz
-        asset_content_type: application/gzip

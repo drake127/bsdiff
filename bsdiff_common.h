@@ -48,13 +48,13 @@ static inline ATTR_NORETURN void errx(int eval, const char * fmt, ...)
 static inline void read_file_to_buffer(const char * path, uint8_t ** output_buffer, int64_t * output_size)
 {
 	FILE * f;
-	struct stat64 s;
+	struct stat s;
 	size_t bytes_read = 0, to_read;
 
 	if ((f = fopen(path, "rb")) == NULL)
 		errx(1, "fopen (%s)", path);
 	
-	if (fstat64(fileno(f), &s) == -1)
+	if (fstat(fileno(f), &s) == -1)
 		errx(1, "fstat (%s)", path);
 	*output_size = s.st_size;
 
