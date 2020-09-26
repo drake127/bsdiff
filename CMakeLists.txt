@@ -9,10 +9,12 @@ if (MSVC)
   string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
   add_compile_options("/wd4100")
   add_compile_definitions(
+    "_CRT_DECLARE_NONSTDC_NAMES=0"
     "_CRT_SECURE_NO_WARNINGS"
     "_CRT_NONSTDC_NO_WARNINGS"
     "stat=_stat64"
     "fstat=_fstat64"
+    "fileno=_fileno"
     "ATTR_UNUSED="
     "ATTR_NORETURN=__declspec(noreturn)")
 else()
