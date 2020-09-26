@@ -11,15 +11,15 @@ if (MSVC)
   add_compile_definitions(
     "_CRT_SECURE_NO_WARNINGS"
     "_CRT_NONSTDC_NO_WARNINGS"
-    "stat64=_stat64"
-    "fstat64=_fstat64"
+    "stat=_stat64"
+    "fstat=_fstat64"
     "ATTR_UNUSED="
     "ATTR_NORETURN=__declspec(noreturn)")
 else()
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
   add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-Werror")
   add_compile_definitions(
-    "_LARGEFILE64_SOURCE"
+    "_FILE_OFFSET_BITS=64"
     "ATTR_UNUSED=__attribute__((unused))"
     "ATTR_NORETURN=__attribute__((noreturn))")
 endif()
