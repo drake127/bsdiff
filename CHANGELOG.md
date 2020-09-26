@@ -2,6 +2,10 @@ Changelog
 =====
 This changelog documents all notable changes in the project.
 
+4.3.3 (2020-09-26)
+-----
+- Added support for MacOS builds.
+
 4.3.2 (2020-09-21)
 -----
 - Added support for processing files larger than 2 GB.
